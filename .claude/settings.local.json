@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\Users\\catap\\AndroidStudioProjects\\korail_ai_agent\\lib\\onboarding\")",
+      "Bash(mkdir:*)",
+      "Bash(copy:*)",
+      "Bash(copy \"C:\\Users\\catap\\AndroidStudioProjects\\korail_ai_agent\\figma_images\\onboarding\\ticket-bnt.png\" \"C:\\Users\\catap\\AndroidStudioProjects\\korail_ai_agent\\assets\\figma_images\\onboarding\\ticket-bnt.png\")",
+      "Bash(flutter pub get:*)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(flutter pub run:*)",
+      "Bash(flutter analyze:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
