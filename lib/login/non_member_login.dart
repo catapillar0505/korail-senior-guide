@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'info_check_screen.dart';
 import '../components/custom_header.dart';
 import '../components/bottom_nav_bar.dart';
+import '../components/ai_guide_zone.dart';
 
 class NonMemberLoginScreen extends StatefulWidget {
   const NonMemberLoginScreen({super.key});
@@ -337,8 +338,6 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
                       // Top Navigation Bar
                       CustomHeader(
                         title: '비회원',
-                        topMargin: 40,
-                        height: 80,
                       ),
 
                     // Form Container
@@ -454,52 +453,22 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 height: guideZoneHeight,
-                decoration: BoxDecoration(
-                  color: isDanbiSpeaking ? Colors.transparent : Colors.white,
+                child: AiGuideZone(
+                  guideText: displayedText,
+                  height: guideZoneHeight,
+                  backgroundColor: isDanbiSpeaking ? Colors.transparent : Colors.white,
+                  textColor: isDanbiSpeaking ? Colors.white : Colors.black,
+                  showGradient: isDanbiSpeaking,
+                  showBorder: true,
+                  showRoundedCorners: true,
+                  wrapWithPositioned: false,
                   boxShadow: isDanbiSpeaking
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ]
+                      ? BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        )
                       : null,
-                ),
-                child: Stack(
-                  children: [
-                    // Gradient overlay (only when not speaking)
-                    if (!isDanbiSpeaking)
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              const Color(0xFFB5D4ED).withOpacity(0.75),
-                              const Color(0xFFB5D4ED).withOpacity(0.0),
-                            ],
-                            stops: const [0.0, 0.3],
-                          ),
-                        ),
-                      ),
-                    // Text on top
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Center(
-                        child: Text(
-                          displayedText,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: isDanbiSpeaking ? Colors.white : Colors.black,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),

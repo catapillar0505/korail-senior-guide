@@ -1,35 +1,47 @@
 import 'package:flutter/material.dart';
+import '../components/layouts/custom_layout.dart';
 
-class PaymentScreenFinal extends StatelessWidget {
+class PaymentScreenFinal extends StatefulWidget {
   const PaymentScreenFinal({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Full screen image
-          Positioned.fill(
-            top: MediaQuery.of(context).padding.top,
-            child: Image.asset(
-              'assets/figma_images/commoncard/final.png',
-              fit: BoxFit.cover,
-            ),
-          ),
+  State<PaymentScreenFinal> createState() => _PaymentScreenFinalState();
+}
 
-          // Status bar overlay
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: MediaQuery.of(context).padding.top,
-              color: const Color(0xFF0C3C61),
-            ),
+class _PaymentScreenFinalState extends State<PaymentScreenFinal> {
+  bool _showGuideZone = true;
+
+  void _hideGuideZone() {
+    setState(() {
+      _showGuideZone = false;
+    });
+  }
+
+  void _showGuideZoneAgain() {
+    setState(() {
+      _showGuideZone = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomLayout(
+      headerTitle: '나의 티켓',
+      headerBackgroundColor: const Color(0xFF003D5B),
+      body: GestureDetector(
+        onTap: _hideGuideZone,
+        child: SingleChildScrollView(
+          child: Image.asset(
+            'assets/figma_images/commoncard/final.png',
+            fit: BoxFit.fitWidth,
+            width: double.infinity,
           ),
-        ],
+        ),
       ),
+      showGuideZone: _showGuideZone,
+      guideText: '티켓 발급이 완료되었습니다!',
+      backgroundColor: Colors.white,
+      onDanbiPressed: _showGuideZoneAgain,
     );
   }
 }

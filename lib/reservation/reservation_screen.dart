@@ -251,6 +251,9 @@ class _ReservationScreenState extends State<ReservationScreen> with SingleTicker
 
         if (stackRenderBox == null || targetRenderBox == null) return const SizedBox.shrink();
 
+        // 렌더 박스가 아직 레이아웃되지 않았으면 그림자를 그리지 않음
+        if (!stackRenderBox.hasSize || !targetRenderBox.hasSize) return const SizedBox.shrink();
+
         // Stack을 기준으로 상대 좌표 계산
         final stackOffset = stackRenderBox.localToGlobal(Offset.zero);
         final targetOffset = targetRenderBox.localToGlobal(Offset.zero);
@@ -551,39 +554,37 @@ class _ReservationScreenState extends State<ReservationScreen> with SingleTicker
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Container(
-                              key: _trainSearchKey,
-                              child: GestureDetector(
-                                onTap: () {
-                                  // 현재 그림자 fade out
-                                  _hideShadowAnimation();
+                            child: GestureDetector(
+                              onTap: () {
+                                // 현재 그림자 fade out
+                                _hideShadowAnimation();
 
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TrainSettingScreen(
-                                        departureStation: departureStation,
-                                        arrivalStation: arrivalStation,
-                                        selectedDate: selectedDate,
-                                        selectedHour: selectedHour,
-                                      ),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TrainSettingScreen(
+                                      departureStation: departureStation,
+                                      arrivalStation: arrivalStation,
+                                      selectedDate: selectedDate,
+                                      selectedHour: selectedHour,
                                     ),
-                                  );
-                                },
-                                child: Container(
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFB0D4E3),
-                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Center(
-                                    child: Text(
-                                      '열차조회',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF003D5B),
-                                      ),
+                                );
+                              },
+                              child: Container(
+                                key: _trainSearchKey,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFB0D4E3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '열차조회',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF003D5B),
                                     ),
                                   ),
                                 ),

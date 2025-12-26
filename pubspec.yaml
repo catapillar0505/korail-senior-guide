@@ -69,6 +69,7 @@ flutter:
     - assets/figma_images/onboarding/ticket-bnt.png
     - assets/figma_images/onboarding/speak-icon.svg
     - assets/figma_images/onboarding/onboarding-image.png
+    - assets/figma_images/onboarding/onboarding-gif.gif
     - assets/figma_images/reservation/date-top-navbar.png
     - assets/figma_images/reservation/people-top-navbar.png
     - assets/figma_images/reservation/train-top-navbar.png

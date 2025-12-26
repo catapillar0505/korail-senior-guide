@@ -4,6 +4,7 @@ import 'payment_screen_3_cardscan.dart';
 import 'payment_screen_7.dart';
 import '../components/custom_header.dart';
 import '../components/bottom_nav_bar.dart';
+import '../components/ai_guide_zone.dart';
 
 class PaymentScreen3 extends StatefulWidget {
   const PaymentScreen3({super.key});
@@ -26,7 +27,7 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _idNumberFocusNode = FocusNode();
 
-  String _guideMessage = '좋아요! 이제 카드스캔 또는 직접\n카드정보를 입력해주세요';
+  String _guideMessage = '아래로 내려주세요\n카드스캔 또는 직접 카드정보를\n입력해주세요';
   bool _isPrivacyChecked = false;
 
   final List<bool?> _cardNumberValid = [null, null, null, null]; // null = not started, true = valid, false = invalid
@@ -239,7 +240,7 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
         } else if (_idNumberController.text.length < 6) {
           _guideMessage = '6자리를 모두 입력해주세요';
         } else if (_idNumberValid == true) {
-          _guideMessage = '거의 다 끝났어요! 잘하고 있어요!';
+          _guideMessage = '아래로 내려서\n개인정보 수집 동의해주세요!';
         } else if (_idNumberValid == false) {
           _guideMessage = '주민번호는 6자리 숫자여야 해요';
         }
@@ -281,7 +282,7 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
     final isKeyboardVisible = keyboardHeight > 0;
     final bottomBarHeight = 70.0;
     final buttonAreaHeight = 80.0; // 버튼 영역 높이 (56 + 패딩)
-    final guideZoneHeight = 100.0;
+    final guideZoneHeight = 200.0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -296,8 +297,6 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
                 // Header
                 CustomHeader(
                   title: '결제',
-                  topMargin: 50,
-                  height: 70,
                 ),
 
                 // Tabs
@@ -916,35 +915,11 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: guideZoneHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                gradient: isKeyboardVisible
-                    ? null
-                    : LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          const Color(0xFFB5D4ED).withOpacity(0.75),
-                          const Color(0xFFB5D4ED).withOpacity(0.0),
-                        ],
-                        stops: const [0.0, 0.5],
-                      ),
-              ),
-              child: Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    _guideMessage,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
+              child: AiGuideZone(
+                guideText: _guideMessage,
+                height: guideZoneHeight,
+                wrapWithPositioned: false,
+                fontSize: 22,
               ),
             ),
           ),
@@ -998,11 +973,30 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
                       ),
                       child: TextButton(
                         onPressed: () {
+                          // Validate all fields before proceeding
+                          bool allValid = _cardNumberValid.every((v) => v == true) &&
+                              _expiryMonthValid == true &&
+                              _expiryYearValid == true &&
+                              _passwordValid == true &&
+                              _idNumberValid == true &&
+                              _isPrivacyChecked;
+
+                          if (!allValid) {
+                            // Show error message if fields are not valid
+                            setState(() {
+                              _guideMessage = '모든 정보를 정확히 입력해주세요!';
+                            });
+                            return;
+                          }
+
                           // Combine card numbers
                           String fullCardNumber = _cardNumberControllers.map((c) => c.text).join();
 
-                          // Format expiry date as MM/YY
-                          String expiryDate = '${_expiryMonthController.text}/${_expiryYearController.text.substring(2)}';
+                          // Format expiry date as MM/YY (safely)
+                          String expiryDate = '';
+                          if (_expiryYearController.text.length >= 2) {
+                            expiryDate = '${_expiryMonthController.text}/${_expiryYearController.text.substring(2)}';
+                          }
 
                           Navigator.push(
                             context,

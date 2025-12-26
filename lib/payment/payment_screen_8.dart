@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'payment_screen_final.dart';
 import '../components/bottom_nav_bar.dart';
+import '../components/custom_header.dart';
+import '../components/ai_guide_zone.dart';
 
 class PaymentScreen8 extends StatefulWidget {
   final String cardNumber;
@@ -88,7 +90,7 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
     final isKeyboardVisible = keyboardHeight > 0;
     final bottomBarHeight = 70.0;
     final buttonAreaHeight = 104.0; // 버튼 영역 높이 (56 + 패딩)
-    final guideZoneHeight = 140.0;
+    final guideZoneHeight = 200.0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -100,30 +102,13 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
             bottom: bottomBarHeight + buttonAreaHeight + guideZoneHeight,
             child: Column(
               children: [
-                // Top bar with title and menu
-                Container(
-                  height: 100,
-                  color: const Color(0xFF003D5B),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      SizedBox(width: 40),
-                      Text(
-                        '자주쓰는 카드 설정',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Icon(
-                        Icons.menu,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ],
-                  ),
+                // Header
+                CustomHeader(
+                  title: '자주쓰는 카드 설정',
+                  backgroundColor: const Color(0xFF003D5B),
+                  showBackButton: true,
+                  showBackButtonOnRight: true,
+                  backIcon: Icons.menu,
                 ),
 
                 // Content
@@ -384,31 +369,11 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: guideZoneHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                gradient: isKeyboardVisible
-                    ? null
-                    : LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          const Color(0xFFB5D4ED).withOpacity(0.75),
-                          const Color(0xFFB5D4ED).withOpacity(0.0),
-                        ],
-                        stops: const [0.0, 0.5],
-                      ),
-              ),
-              child: Center(
-                child: Text(
-                  _guideMessage,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                    height: 1.4,
-                  ),
-                ),
+              child: AiGuideZone(
+                guideText: _guideMessage,
+                height: guideZoneHeight,
+                wrapWithPositioned: false,
+                fontSize: 22,
               ),
             ),
           ),
@@ -461,17 +426,6 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
             right: 0,
             bottom: 0,
             child: BottomNavBar(),
-          ),
-
-          // Status bar overlay
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: MediaQuery.of(context).padding.top,
-              color: const Color(0xFF0C3C61),
-            ),
           ),
         ],
       ),

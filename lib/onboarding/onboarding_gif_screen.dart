@@ -16,7 +16,7 @@ class OnboardingGifScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(top: 40),
                 child: Center(
                   child: Image.asset(
-                    'assets/figma_images/onboarding/onboarding-image.png',
+                    'assets/figma_images/onboarding/onboarding-gif.gif',
                     fit: BoxFit.contain,
                   ),
                 ),

@@ -52,9 +52,10 @@ class _PaymentScreen4State extends State<PaymentScreen4> {
                 '카드번호와 유효기간이 사각형 안에\n가장 크게 보이도록 가깝게 맞춰주세요',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   color: Colors.white.withOpacity(0.7),
                   height: 1.5,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

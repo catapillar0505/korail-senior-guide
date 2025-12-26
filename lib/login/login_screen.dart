@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'non_member_login.dart';
-import '../components/layouts/home_layout.dart';
+import '../components/layouts/custom_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -83,11 +83,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
+    return CustomLayout(
+      headerTitle: '로그인',
       showHeader: false,
       showGuideZone: true,
       guideText: textGuides[currentGuideIndex],
       guideZoneHeight: 120,
+      showBottomNavBar: true,
       body: GestureDetector(
         onTap: _onWrongTap,
         behavior: HitTestBehavior.opaque,

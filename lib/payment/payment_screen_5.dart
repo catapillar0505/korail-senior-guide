@@ -88,12 +88,13 @@ class _PaymentScreen5State extends State<PaymentScreen5> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 12),
             child: const Text(
-              '후면 카메라로 카드번호와 유효기간이 사각형 안에\n가장 크게 보이도록 가깝게 맞춰주세요',
+              '후면 카메라로 카드번호와 유효기간이 \n사각형 안에 가장 크게 보이도록\n가깝게 맞춰주세요',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 color: Colors.black,
                 height: 1.5,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

@@ -73,17 +73,6 @@ class PaymentScreen3CardScan extends StatelessWidget {
                 // Guide text and next button
                 Container(
                   height: 200,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        const Color(0xFFB5D4ED).withOpacity(0.75),
-                        const Color(0xFFB5D4ED).withOpacity(0.0),
-                      ],
-                      stops: const [0.0, 0.5],
-                    ),
-                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -93,17 +82,18 @@ class PaymentScreen3CardScan extends StatelessWidget {
                           '카드를 찍기 위해 카메라가 필요해요\n다음에 나오는 권한을 선택해주세요',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 22,
                             color: Colors.black,
+                            fontWeight: FontWeight.w600,
                             height: 1.5,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 32),
 
                       // Next button
                       Padding(
-                        padding: const EdgeInsets.only(right: 24.0, bottom: 24.0),
+                        padding: const EdgeInsets.only(right: 24.0, left: 24.0, bottom: 24.0),
                         child: Align(
                           alignment: Alignment.center,
                           child: ElevatedButton(
@@ -111,10 +101,13 @@ class PaymentScreen3CardScan extends StatelessWidget {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF003D5B), // 배경색
                               foregroundColor: Colors.white, // 글자색
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 150.0, vertical: 15.0),
                               textStyle: const TextStyle(
-                                fontSize: 20,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w600,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
                               ),
                             ),
                             child: const Text('다음'),
@@ -127,6 +120,7 @@ class PaymentScreen3CardScan extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 64),
 
           // Bottom navigation bar
           Container(

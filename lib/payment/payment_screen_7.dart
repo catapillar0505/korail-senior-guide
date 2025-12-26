@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'payment_screen_8.dart';
 import 'payment_screen_final.dart';
+import '../components/bottom_nav_bar.dart';
 
 class PaymentScreen7 extends StatelessWidget {
   final String cardNumber;
@@ -16,15 +17,16 @@ class PaymentScreen7 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Column(
-        children: [
-          // Top bar
-          Container(
-            height: 50,
-            color: const Color(0xFF003D5B),
-          ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+          children: [
+            // Top bar
+            Container(
+              height: 50,
+              color: const Color(0xFF003D5B),
+            ),
 
           // Main content
           Expanded(
@@ -67,9 +69,10 @@ class PaymentScreen7 extends StatelessWidget {
                     '결제하신 카드를 자주쓰는 카드로\n등록하시겠습니까?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 22,
                       color: Colors.black,
                       height: 1.5,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -148,72 +151,11 @@ class PaymentScreen7 extends StatelessWidget {
           ),
 
           // Bottom navigation bar
-          Container(
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  child: Image.asset(
-                    'assets/figma_images/onboarding/home-bnt.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Container(
-                  width: 140,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF003D5B),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '단비',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 80,
-                  height: 80,
-                  child: Image.asset(
-                    'assets/figma_images/onboarding/ticket-bnt.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const BottomNavBar(),
         ],
-          ),
-
-          // Status bar overlay
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: MediaQuery.of(context).padding.top,
-              color: const Color(0xFF0C3C61),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

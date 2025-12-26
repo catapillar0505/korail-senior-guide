@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import '../app_header.dart';
+import '../custom_header.dart';
 import '../bottom_nav_bar.dart';
 import '../ai_guide_zone.dart';
 
-class MainLayout extends StatelessWidget {
+class CustomLayout extends StatelessWidget {
   // Header props
-  final AppHeader? header;
+  final String headerTitle;
+  final Color headerBackgroundColor;
+  final VoidCallback? onBackPressed;
   final bool showHeader;
+  final bool showBackButton;
 
   // Body
   final Widget body;
@@ -16,6 +19,9 @@ class MainLayout extends StatelessWidget {
   final bool showGuideZone;
   final double guideZoneHeight;
   final AlignmentGeometry guideTextAlignment;
+
+  // Overlay widgets (for modals, etc.)
+  final List<Widget>? overlayWidgets;
 
   // Bottom Navigation Bar props
   final VoidCallback? onHomePressed;
@@ -29,15 +35,19 @@ class MainLayout extends StatelessWidget {
   // Background color
   final Color backgroundColor;
 
-  const MainLayout({
+  const CustomLayout({
     super.key,
-    this.header,
+    required this.headerTitle,
+    this.headerBackgroundColor = const Color(0xFF0C3C61),
+    this.onBackPressed,
     this.showHeader = true,
+    this.showBackButton = true,
     required this.body,
     this.guideText,
-    this.showGuideZone = false,
+    this.showGuideZone = true,
     this.guideZoneHeight = 200,
     this.guideTextAlignment = Alignment.center,
+    this.overlayWidgets,
     this.onHomePressed,
     this.onDanbiPressed,
     this.onTicketPressed,
@@ -57,9 +67,14 @@ class MainLayout extends StatelessWidget {
           children: [
             Column(
               children: [
-                // Header
+                // Custom Header
                 if (showHeader)
-                  header ?? const AppHeader.image(),
+                  CustomHeader(
+                    title: headerTitle,
+                    backgroundColor: headerBackgroundColor,
+                    showBackButton: showBackButton,
+                    onBackPressed: onBackPressed,
+                  ),
 
                 // Body
                 Expanded(
@@ -75,6 +90,9 @@ class MainLayout extends StatelessWidget {
                 height: guideZoneHeight,
                 verticalAlignment: guideTextAlignment,
               ),
+
+            // Overlay widgets (modals, etc.)
+            if (overlayWidgets != null) ...overlayWidgets!,
           ],
         ),
       ),

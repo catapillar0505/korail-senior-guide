@@ -32,9 +32,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
   final GlobalKey _stackKey = GlobalKey();
   final GlobalKey _normalPriceHeaderKey = GlobalKey();
   final GlobalKey _specialPriceHeaderKey = GlobalKey();
-
-  // 각 열차의 일반실/특우등 버튼 키 리스트 (9개 열차 * 2개 버튼)
-  final List<GlobalKey> _trainButtonKeys = List.generate(18, (_) => GlobalKey());
+  final GlobalKey _listViewKey = GlobalKey(); // ListView의 높이를 측정하기 위한 키
 
   final List<String> textGuides = [
     '원하는열차를 선택해주세요\n사각형 버튼을 누르면 돼요',
@@ -140,15 +138,20 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
 
         // AnimatedBuilder 안에서 currentContext 체크
         if (_normalPriceHeaderKey.currentContext == null ||
-            _specialPriceHeaderKey.currentContext == null) {
+            _specialPriceHeaderKey.currentContext == null ||
+            _listViewKey.currentContext == null) {
           return const SizedBox.shrink();
         }
 
         final RenderBox? stackRenderBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
         final RenderBox? normalPriceRenderBox = _normalPriceHeaderKey.currentContext?.findRenderObject() as RenderBox?;
         final RenderBox? specialPriceRenderBox = _specialPriceHeaderKey.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? listViewRenderBox = _listViewKey.currentContext?.findRenderObject() as RenderBox?;
 
-        if (stackRenderBox == null || normalPriceRenderBox == null || specialPriceRenderBox == null) {
+        if (stackRenderBox == null || normalPriceRenderBox == null ||
+            specialPriceRenderBox == null || listViewRenderBox == null ||
+            !stackRenderBox.hasSize || !normalPriceRenderBox.hasSize ||
+            !specialPriceRenderBox.hasSize || !listViewRenderBox.hasSize) {
           return const SizedBox.shrink();
         }
 
@@ -158,45 +161,32 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
         // 하이라이트할 Rect 리스트
         List<Rect> highlightRects = [];
 
-        // 헤더의 일반실 운임 추가
+        // 일반실 운임 열 전체 (헤더 + ListView의 해당 열)
         final normalPriceOffset = normalPriceRenderBox.localToGlobal(Offset.zero);
         final normalPriceRelativeOffset = normalPriceOffset - stackOffset;
         final normalPriceSize = normalPriceRenderBox.size;
+
+        final listViewSize = listViewRenderBox.size;
+
+        // 일반실 운임 열 (헤더부터 ListView 끝까지)
         highlightRects.add(Rect.fromLTWH(
           normalPriceRelativeOffset.dx,
           normalPriceRelativeOffset.dy,
           normalPriceSize.width,
-          normalPriceSize.height,
+          normalPriceSize.height + listViewSize.height,
         ));
 
-        // 헤더의 특/우등 운임+요금 추가
+        // 특/우등 운임+요금 열 (헤더부터 ListView 끝까지)
         final specialPriceOffset = specialPriceRenderBox.localToGlobal(Offset.zero);
         final specialPriceRelativeOffset = specialPriceOffset - stackOffset;
         final specialPriceSize = specialPriceRenderBox.size;
+
         highlightRects.add(Rect.fromLTWH(
           specialPriceRelativeOffset.dx,
           specialPriceRelativeOffset.dy,
           specialPriceSize.width,
-          specialPriceSize.height,
+          specialPriceSize.height + listViewSize.height,
         ));
-
-        // 모든 열차 버튼들 추가
-        for (var key in _trainButtonKeys) {
-          if (key.currentContext != null) {
-            final RenderBox? buttonRenderBox = key.currentContext?.findRenderObject() as RenderBox?;
-            if (buttonRenderBox != null) {
-              final buttonOffset = buttonRenderBox.localToGlobal(Offset.zero);
-              final buttonRelativeOffset = buttonOffset - stackOffset;
-              final buttonSize = buttonRenderBox.size;
-              highlightRects.add(Rect.fromLTWH(
-                buttonRelativeOffset.dx,
-                buttonRelativeOffset.dy,
-                buttonSize.width,
-                buttonSize.height,
-              ));
-            }
-          }
-        }
 
         return Positioned.fill(
           child: IgnorePointer(
@@ -540,6 +530,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
           // Train List
           Expanded(
             child: Container(
+              key: _listViewKey,
               color: Colors.white,
               child: NotificationListener<ScrollNotification>(
                 onNotification: (scrollNotification) {
@@ -738,7 +729,6 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
               child: GestureDetector(
                 onTap: () => _onCorrectTap(trainIndex),
                 child: Container(
-                  key: _trainButtonKeys[trainIndex * 2],
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                   decoration: BoxDecoration(
@@ -780,7 +770,6 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
               child: GestureDetector(
                 onTap: isSoldOut ? null : () => _onCorrectTap(trainIndex),
                 child: Container(
-                  key: _trainButtonKeys[trainIndex * 2 + 1],
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                   decoration: BoxDecoration(

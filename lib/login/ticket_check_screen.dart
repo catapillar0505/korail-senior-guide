@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../payment/payment_screen_1.dart';
+import '../components/ai_guide_zone.dart';
+import '../components/custom_header.dart';
+import '../components/bottom_nav_bar.dart';
 
 class TicketCheckScreen extends StatefulWidget {
   const TicketCheckScreen({super.key});
@@ -30,46 +33,22 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFF5F5F5),
-      body: Stack(
-        children: [
+      body: SafeArea(
+        child: Stack(
+          children: [
             SingleChildScrollView(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
                   // Top Navigation Bar
-                  Container(
-                    margin: const EdgeInsets.only(top: 40),
-                    height: 70,
-                    color: const Color(0xFF003D5B),
-                    child: Stack(
-                      children: [
-                        const Center(
-                          child: Text(
-                            '승차권 정보 확인',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          right: 24,
-                          top: 0,
-                          bottom: 0,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  CustomHeader(
+                    title: '승차권 정보 확인',
+                    topMargin: 0,
+                    backgroundColor: const Color(0xFF003D5B),
+                    showBackButton: true,
+                    backIcon: Icons.close,
+                    showBackButtonOnRight: true,
+                    onBackPressed: () => Navigator.pop(context),
                   ),
 
                 // Ticket Information Section
@@ -228,7 +207,17 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
               ),
             ),
 
-            // Text Guide and Payment Button (Fixed at bottom)
+            // AI Guide Zone
+            AiGuideZone(
+              guideText: '예약 정보가 맞으면\n결제하기를 눌러주세요',
+              height: 130,
+              fontSize: 22,
+              showGradient: true,
+              showBorder: false,
+              showRoundedCorners: false,
+            ),
+
+            // Payment Button (Fixed at bottom)
             Positioned(
               left: 0,
               right: 0,
@@ -236,34 +225,7 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Text Guide Area
-                  Container(
-                    height: 130,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          const Color(0xFFB5D4ED).withOpacity(0.75),
-                          const Color(0xFFB5D4ED).withOpacity(0.0),
-                        ],
-                        stops: const [0.0, 0.3],
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: const Center(
-                      child: Text(
-                        '예약 정보가 맞으면\n결제하기를 눌러주세요',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 130), // Space for guide zone
 
                   // Payment Button
                   Container(
@@ -300,76 +262,12 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
                   ),
 
                   // Bottom Navigation Bar
-                  Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        // Home Button
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                          ),
-                          child: Image.asset(
-                            'assets/figma_images/onboarding/home-bnt.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-
-                        // Danbi Button
-                        Container(
-                          width: 140,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF003D5B),
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              '단비',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // My Ticket Button
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                          ),
-                          child: Image.asset(
-                            'assets/figma_images/onboarding/ticket-bnt.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  BottomNavBar(),
                 ],
               ),
             ),
           ],
         ),
-      bottomNavigationBar: SafeArea(
-        child: SizedBox.shrink(),
       ),
     );
   }
