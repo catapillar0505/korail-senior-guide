@@ -105,17 +105,19 @@ class PaymentScreen3CardScan extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(right: 24.0, bottom: 24.0),
                         child: Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () => _onNextPressed(context),
-                            child: const Text(
-                              '다음 >',
-                              style: TextStyle(
+                          alignment: Alignment.center,
+                          child: ElevatedButton(
+                            onPressed: () => _onNextPressed(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF003D5B), // 배경색
+                              foregroundColor: Colors.white, // 글자색
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              textStyle: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
                               ),
                             ),
+                            child: const Text('다음'),
                           ),
                         ),
                       ),

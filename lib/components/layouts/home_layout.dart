@@ -14,8 +14,6 @@ class MainLayout extends StatelessWidget {
   // AI Guide Zone props
   final String? guideText;
   final bool showGuideZone;
-  final bool showNextButton;
-  final VoidCallback? onNextPressed;
   final double guideZoneHeight;
 
   // Bottom Navigation Bar props
@@ -37,8 +35,6 @@ class MainLayout extends StatelessWidget {
     required this.body,
     this.guideText,
     this.showGuideZone = false,
-    this.showNextButton = false,
-    this.onNextPressed,
     this.guideZoneHeight = 200,
     this.onHomePressed,
     this.onDanbiPressed,
@@ -74,8 +70,6 @@ class MainLayout extends StatelessWidget {
             if (showGuideZone && guideText != null)
               AiGuideZone(
                 guideText: guideText!,
-                showNextButton: showNextButton,
-                onNextPressed: onNextPressed,
                 height: guideZoneHeight,
               ),
           ],

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 class AiGuideZone extends StatelessWidget {
   final String guideText;
-  final bool showNextButton;
-  final VoidCallback? onNextPressed;
   final double height;
   final TextAlign textAlign;
   final double fontSize;
@@ -17,8 +15,6 @@ class AiGuideZone extends StatelessWidget {
   const AiGuideZone({
     super.key,
     required this.guideText,
-    this.showNextButton = false,
-    this.onNextPressed,
     this.height = 200,
     this.textAlign = TextAlign.center,
     this.fontSize = 20,
@@ -38,55 +34,36 @@ class AiGuideZone extends StatelessWidget {
       right: 0,
       child: Container(
         height: height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              gradientStartColor.withOpacity(gradientStartOpacity),
-              gradientEndColor.withOpacity(gradientEndOpacity),
-            ],
-            stops: const [0.0, 0.3],
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          border: Border(
+            top: BorderSide(
+              color: Color(0xFFD2D2D2),
+              width: 2,
+            ),
+            bottom: BorderSide(
+              color: Color(0xFFD2D2D2),
+              width: 2,
+            ),
           ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(
-                child: Text(
-                  guideText,
-                  textAlign: textAlign,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: fontWeight,
-                    color: textColor,
-                    height: 1.5,
-                  ),
-                ),
+          child: Center(
+            child: Text(
+              guideText,
+              textAlign: textAlign,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                color: textColor,
+                height: 1.5,
               ),
-              if (showNextButton && onNextPressed != null)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: onNextPressed,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.only(top: 10),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      '다음 >',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w100,
-                        color: textColor,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),

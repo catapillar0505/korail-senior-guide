@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'payment_screen_2.dart';
 import 'payment_screen_3_cardscan.dart';
 import 'payment_screen_7.dart';
+import '../components/custom_header.dart';
+import '../components/bottom_nav_bar.dart';
 
 class PaymentScreen3 extends StatefulWidget {
   const PaymentScreen3({super.key});
@@ -244,14 +246,6 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
       }
   }
 
-  void _checkPrivacyAndProceed() {
-    if (!_isPrivacyChecked) {
-      setState(() {
-        _guideMessage = '개인정보 이용에 동의해주세요';
-      });
-    }
-  }
-
   void _onCardScan() async {
     final result = await Navigator.push(
       context,
@@ -288,7 +282,6 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
     final bottomBarHeight = 70.0;
     final buttonAreaHeight = 80.0; // 버튼 영역 높이 (56 + 패딩)
     final guideZoneHeight = 100.0;
-    final safeAreaBottom = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -301,39 +294,10 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
             child: Column(
               children: [
                 // Header
-                Container(
-                  margin: const EdgeInsets.only(top: 50),
+                CustomHeader(
+                  title: '결제',
+                  topMargin: 50,
                   height: 70,
-                  color: const Color(0xFF6B4FA3),
-                  child: Stack(
-                    children: [
-                      const Center(
-                        child: Text(
-                          '결제',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 24,
-                        top: 0,
-                        bottom: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
 
                 // Tabs
@@ -1071,62 +1035,7 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
 
         ],
       ),
-      bottomNavigationBar: isKeyboardVisible
-          ? null
-          : SafeArea(
-              child: Container(
-                height: bottomBarHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      child: Image.asset(
-                        'assets/figma_images/onboarding/home-bnt.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    Container(
-                      width: 140,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF003D5B),
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '단비',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 80,
-                      height: 80,
-                      child: Image.asset(
-                        'assets/figma_images/onboarding/ticket-bnt.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+      bottomNavigationBar: isKeyboardVisible ? null : const BottomNavBar(),
     );
   }
 

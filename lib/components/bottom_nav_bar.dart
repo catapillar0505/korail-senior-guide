@@ -68,7 +68,7 @@ class BottomNavBar extends StatelessWidget {
                 child: Center(
                   child: danbiChild ??
                       Text(
-                        '단비',
+                        '도움버튼',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

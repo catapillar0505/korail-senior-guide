@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class DateSettingScreen extends StatefulWidget {
   final DateTime initialDate;
@@ -49,7 +48,6 @@ class _DateSettingScreenState extends State<DateSettingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
     final currentMonth = selectedDate.month;
     final currentYear = selectedDate.year;
     final daysInMonth = DateTime(currentYear, currentMonth + 1, 0).day;

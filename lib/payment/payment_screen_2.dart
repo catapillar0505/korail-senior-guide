@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'payment_screen_3.dart';
+import '../components/layouts/custom_layout.dart';
 
 class PaymentScreen2 extends StatefulWidget {
   const PaymentScreen2({super.key});
@@ -38,48 +39,13 @@ class _PaymentScreen2State extends State<PaymentScreen2> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
+    return CustomLayout(
+      headerTitle: '결제',
+      showGuideZone: guideMessage.isNotEmpty,
+      guideText: guideMessage,
+      guideZoneHeight: 120,
+      body: Column(
         children: [
-          Column(
-        children: [
-          // Header
-          Container(
-            margin: const EdgeInsets.only(top: 50),
-            height: 80,
-            color: const Color(0xFF6B4FA3),
-            child: Stack(
-              children: [
-                const Center(
-                  child: Text(
-                    '결제',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 24,
-                  top: 0,
-                  bottom: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           // Tabs
           Container(
             color: Colors.white,
@@ -206,98 +172,13 @@ class _PaymentScreen2State extends State<PaymentScreen2> with SingleTickerProvid
                         size: 32,
                       ),
                     ),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 200),
                   ],
                 ),
               ),
             ),
           ),
-
-          // Guide text
-          Container(
-            height: 120,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  const Color(0xFFB5D4ED).withOpacity(0.75),
-                  const Color(0xFFB5D4ED).withOpacity(0.0),
-                ],
-                stops: const [0.0, 0.3],
-              ),
-            ),
-            child: Center(
-              child: Text(
-                guideMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ),
-
         ],
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                child: Image.asset(
-                  'assets/figma_images/onboarding/home-bnt.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-              Container(
-                width: 140,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF003D5B),
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: const Center(
-                  child: Text(
-                    '단비',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 80,
-                height: 80,
-                child: Image.asset(
-                  'assets/figma_images/onboarding/ticket-bnt.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../login/login_screen.dart';
+import '../components/layouts/custom_layout.dart';
 
 class TrainSettingScreen extends StatefulWidget {
   final String departureStation;
@@ -22,41 +23,55 @@ class TrainSettingScreen extends StatefulWidget {
 class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTickerProviderStateMixin {
   int currentGuideIndex = 0;
   bool showGuideZone = true;
-  bool showNextButton = true;
   int wrongTapCount = 0;
-  bool isBlinking = false;
   bool showReservationModal = false;
   int selectedTrainIndex = -1;
-  AnimationController? _blinkController;
-  Animation<double>? _blinkAnimation;
+  AnimationController? _shadowController;
+  Animation<double>? _shadowAnimation;
+
+  final GlobalKey _stackKey = GlobalKey();
+  final GlobalKey _normalPriceHeaderKey = GlobalKey();
+  final GlobalKey _specialPriceHeaderKey = GlobalKey();
+
+  // 각 열차의 일반실/특우등 버튼 키 리스트 (9개 열차 * 2개 버튼)
+  final List<GlobalKey> _trainButtonKeys = List.generate(18, (_) => GlobalKey());
 
   final List<String> textGuides = [
-    '이 화면에서는\n열차를 시간순으로 볼 수 있어요',
-    '사각형 버튼을 누르면 돼요\n원하는 열차를 선택해주세요!',
-    '도움이 필요하신가요?\n여기 버튼을 눌러주세요',
+    '원하는열차를 선택해주세요\n사각형 버튼을 누르면 돼요',
+    '여기를 누르면 돼요!',
   ];
 
   @override
   void initState() {
     super.initState();
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
+
+    // 그림자 애니메이션 설정
+    _shadowController = AnimationController(
+      duration: const Duration(milliseconds: 650), // 0.65초 fade in
+      reverseDuration: const Duration(milliseconds: 650), // 0.65초 fade out
       vsync: this,
-    )..addListener(() {
-        setState(() {});
-      });
+    );
 
-    _blinkController = controller;
-
-    _blinkAnimation = Tween<double>(begin: 0.2, end: 0.4).animate(
-      CurvedAnimation(parent: controller, curve: Curves.linear),
+    _shadowAnimation = Tween<double>(begin: 0.0, end: 0.5).animate(
+      CurvedAnimation(parent: _shadowController!, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _blinkController?.dispose();
+    _shadowController?.dispose();
     super.dispose();
+  }
+
+  void _startShadowAnimation() {
+    if (!mounted) return;
+    _shadowController?.reset();
+    _shadowController?.forward(); // fade in만 하고 유지
+  }
+
+  void _hideShadowAnimation() {
+    if (!mounted) return;
+    _shadowController?.reverse(); // 사용자 액션 시 fade out
   }
 
   String _getWeekday(DateTime date) {
@@ -68,15 +83,8 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
     return '${widget.selectedDate.year}년 ${widget.selectedDate.month}월 ${widget.selectedDate.day}일 (${_getWeekday(widget.selectedDate)})';
   }
 
-  void _onNextPressed() {
-    setState(() {
-      currentGuideIndex = 1;
-      showNextButton = false;
-    });
-  }
-
   void _onScroll() {
-    if (showGuideZone && currentGuideIndex < 2) {
+    if (showGuideZone && currentGuideIndex < 1) {
       setState(() {
         showGuideZone = false;
       });
@@ -88,19 +96,24 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
       wrongTapCount++;
       if (wrongTapCount >= 2) {
         showGuideZone = true;
-        currentGuideIndex = 2;
-        showNextButton = false;
-        isBlinking = true;
-        _blinkController?.repeat(reverse: true);
+        currentGuideIndex = 1;
       }
     });
+
+    // 2회 이상 잘못 탭하면 그림자 애니메이션 시작
+    if (wrongTapCount >= 2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startShadowAnimation();
+      });
+    }
   }
 
   void _onCorrectTap(int trainIndex) {
+    // 그림자 애니메이션 fade out
+    _hideShadowAnimation();
+
     setState(() {
       wrongTapCount = 0;
-      isBlinking = false;
-      _blinkController?.stop();
       showReservationModal = true;
       showGuideZone = false;
       selectedTrainIndex = trainIndex;
@@ -113,586 +126,549 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
     });
   }
 
+  Widget _buildShadowOverlay() {
+    // wrongTapCount가 2 미만이면 그림자 표시 안 함
+    if (wrongTapCount < 2) return const SizedBox.shrink();
+
+    return AnimatedBuilder(
+      animation: _shadowAnimation!,
+      builder: (context, child) {
+        // 애니메이션 값이 0이면 그림자를 그리지 않음
+        if (_shadowAnimation!.value <= 0.01) {
+          return const SizedBox.shrink();
+        }
+
+        // AnimatedBuilder 안에서 currentContext 체크
+        if (_normalPriceHeaderKey.currentContext == null ||
+            _specialPriceHeaderKey.currentContext == null) {
+          return const SizedBox.shrink();
+        }
+
+        final RenderBox? stackRenderBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? normalPriceRenderBox = _normalPriceHeaderKey.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? specialPriceRenderBox = _specialPriceHeaderKey.currentContext?.findRenderObject() as RenderBox?;
+
+        if (stackRenderBox == null || normalPriceRenderBox == null || specialPriceRenderBox == null) {
+          return const SizedBox.shrink();
+        }
+
+        // Stack을 기준으로 상대 좌표 계산
+        final stackOffset = stackRenderBox.localToGlobal(Offset.zero);
+
+        // 하이라이트할 Rect 리스트
+        List<Rect> highlightRects = [];
+
+        // 헤더의 일반실 운임 추가
+        final normalPriceOffset = normalPriceRenderBox.localToGlobal(Offset.zero);
+        final normalPriceRelativeOffset = normalPriceOffset - stackOffset;
+        final normalPriceSize = normalPriceRenderBox.size;
+        highlightRects.add(Rect.fromLTWH(
+          normalPriceRelativeOffset.dx,
+          normalPriceRelativeOffset.dy,
+          normalPriceSize.width,
+          normalPriceSize.height,
+        ));
+
+        // 헤더의 특/우등 운임+요금 추가
+        final specialPriceOffset = specialPriceRenderBox.localToGlobal(Offset.zero);
+        final specialPriceRelativeOffset = specialPriceOffset - stackOffset;
+        final specialPriceSize = specialPriceRenderBox.size;
+        highlightRects.add(Rect.fromLTWH(
+          specialPriceRelativeOffset.dx,
+          specialPriceRelativeOffset.dy,
+          specialPriceSize.width,
+          specialPriceSize.height,
+        ));
+
+        // 모든 열차 버튼들 추가
+        for (var key in _trainButtonKeys) {
+          if (key.currentContext != null) {
+            final RenderBox? buttonRenderBox = key.currentContext?.findRenderObject() as RenderBox?;
+            if (buttonRenderBox != null) {
+              final buttonOffset = buttonRenderBox.localToGlobal(Offset.zero);
+              final buttonRelativeOffset = buttonOffset - stackOffset;
+              final buttonSize = buttonRenderBox.size;
+              highlightRects.add(Rect.fromLTWH(
+                buttonRelativeOffset.dx,
+                buttonRelativeOffset.dy,
+                buttonSize.width,
+                buttonSize.height,
+              ));
+            }
+          }
+        }
+
+        return Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: MultiShadowOverlayPainter(
+                highlightRects: highlightRects,
+                shadowOpacity: _shadowAnimation!.value,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return CustomLayout(
+      headerTitle: '열차조회',
+      headerBackgroundColor: const Color(0xFF003D5B),
       backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                // Top Navigation Bar
-                Image.asset(
-                  'assets/figma_images/reservation/train-top-navbar.png',
-                  width: double.infinity,
-                  fit: BoxFit.fitWidth,
-                ),
-
-              // Route Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                color: const Color(0xFFD0E8F2),
-                child: Center(
-                  child: Text(
-                    '${widget.departureStation} → ${widget.arrivalStation}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF003D5B),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Date Selection Bar
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                color: const Color(0xFFE8E8E8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Previous Day Button
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF003D5B), width: 2),
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                      ),
-                      child: const Text(
-                        '이전날',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF003D5B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Current Date
-                    Text(
-                      _getFormattedDate(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Next Day Button
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF003D5B), width: 2),
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                      ),
-                      child: const Text(
-                        '다음날',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF003D5B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Table Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                color: const Color(0xFFE0E0E0),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '열차',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF666666),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '출발',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF666666),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        '도착',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF666666),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        '일반실\n운임',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF666666),
-                          height: 1.2,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        '특/우등\n운임+요금',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF666666),
-                          height: 1.2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Train List
-              Expanded(
-                child: Container(
-                  color: Colors.white,
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (scrollNotification) {
-                      if (scrollNotification is ScrollUpdateNotification) {
-                        _onScroll();
-                      }
-                      return false;
-                    },
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                      _buildTrainItem(
-                        0,
-                        'KTX-산천\n401',
-                        '11:18\n용산',
-                        '13:12\n광주송정',
-                        '30%할인',
-                        '32,800원',
-                        '운임30%',
-                        '51,500원',
-                        const Color(0xFFFF5722),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        1,
-                        'KTX-산천\n403',
-                        '11:45\n용산',
-                        '13:39\n광주송정',
-                        '25%할인',
-                        '35,100원',
-                        '운임25%',
-                        '53,800원',
-                        const Color(0xFFFF5722),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        2,
-                        'KTX\n405',
-                        '12:15\n용산',
-                        '14:21\n광주송정',
-                        '10%할인',
-                        '42,100원',
-                        '운임10%',
-                        '60,800원',
-                        const Color(0xFFFF5722),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        3,
-                        'KTX-산천\n9419',
-                        '13:30\n용산',
-                        '15:23\n광주송정',
-                        '46,800원',
-                        'Ⓜ5%적립',
-                        '65,500원',
-                        'Ⓜ5%적립',
-                        const Color(0xFFFF9800),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        4,
-                        'KTX\n421',
-                        '14:48\n용산',
-                        '16:46\n광주송정',
-                        '46,800원',
-                        'Ⓜ5%적립',
-                        '65,500원',
-                        'Ⓜ5%적립',
-                        const Color(0xFFFF9800),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        5,
-                        'KTX\n423',
-                        '15:33\n용산',
-                        '17:33\n광주송정',
-                        '46,800원',
-                        'Ⓜ5%적립',
-                        '65,500원',
-                        'Ⓜ5%적립',
-                        const Color(0xFFFF9800),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        6,
-                        'KTX-청룡\n425',
-                        '16:08\n용산',
-                        '17:44\n광주송정',
-                        '47,100원',
-                        'Ⓜ5%적립',
-                        '56,500원',
-                        'Ⓜ5%적립',
-                        const Color(0xFFFF9800),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        7,
-                        'KTX-산천\n427',
-                        '16:43\n용산',
-                        '18:43\n광주송정',
-                        '46,800원',
-                        'Ⓜ5%적립',
-                        '매진',
-                        '',
-                        const Color(0xFFFF9800),
-                        isSoldOut: true,
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                      _buildTrainItem(
-                        8,
-                        'KTX\n481',
-                        '17:10\n용산',
-                        '20:08\n광주송정',
-                        '38,800원',
-                        'Ⓜ5%적립',
-                        '54,000원',
-                        'Ⓜ5%적립',
-                        const Color(0xFFFF9800),
-                      ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // AI Guide Area with Text
-          if (showGuideZone)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 200,
-                color: Colors.white,
+      showGuideZone: showGuideZone,
+      guideText: showGuideZone ? textGuides[currentGuideIndex] : null,
+      overlayWidgets: showReservationModal
+          ? [
+              // Reservation Modal
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        const Color(0xFFB5D4ED).withOpacity(0.75),
-                        const Color(0xFFB5D4ED).withOpacity(0.0),
+                        const Color(0xFFB5D4ED).withValues(alpha: 0.75),
+                        const Color(0xFFB5D4ED).withValues(alpha: 0.0),
                       ],
-                      stops: const [0.0, 0.3],
+                      stops: const [0.0, 0.5],
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Center(
-                          child: Text(
-                            textGuides[currentGuideIndex],
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
+                        if (selectedTrainIndex == 3) ...[
+                          const Text(
+                            '일반실 3시간 6분 소요',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF0288D1),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            '이 열차는 서대전을 경유해요',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                               color: Colors.black,
-                              height: 1.5,
+                              height: 1.3,
                             ),
                           ),
-                        ),
-                        if (showNextButton)
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _onNextPressed,
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.only(top: 10),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text(
-                                '다음 >',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w100,
-                                  color: Colors.black,
-                                ),
-                              ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            '소요시간이 더 걸리는데 괜찮으신가요?',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              height: 1.3,
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Reservation Modal
-          if (showReservationModal)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      const Color(0xFFB5D4ED).withOpacity(0.75),
-                      const Color(0xFFB5D4ED).withOpacity(0.0),
-                    ],
-                    stops: const [0.0, 0.5],
-                  ),
-                ),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 0),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (selectedTrainIndex == 3) ...[
-                        const Text(
-                          '일반실 3시간 6분 소요',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0288D1),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '이 열차는 서대전을 경유해요',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            height: 1.3,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          '소요시간이 더 걸리는데 괜찮으신가요?',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            height: 1.3,
-                          ),
-                        ),
-                      ] else ...[
-                        const Text(
-                          '일반실 2시간 6분 소요',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0288D1),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '이 열차로 예매할까요?',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _onModalCancel,
-                              child: Container(
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFD0E8F2),
-                                  border: Border.all(
-                                    color: const Color(0xFF003D5B),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '취소',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF003D5B),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                        ] else ...[
+                          const Text(
+                            '일반실 2시간 6분 소요',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF0288D1),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Container(
-                            width: 1,
-                            height: 48,
-                            color: const Color(0xFF003D5B),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoginScreen(),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFD0E8F2),
-                                  border: Border.all(
-                                    color: const Color(0xFF003D5B),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '예매',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF003D5B),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            '이 열차로 예매할까요?',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              height: 1.3,
                             ),
                           ),
                         ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Home Button
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Image.asset(
-                  'assets/figma_images/onboarding/home-bnt.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-
-              // Danbi Button
-              Container(
-                width: 140,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF003D5B),
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: const Center(
-                  child: Text(
-                    '단비',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _onModalCancel,
+                                child: Container(
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD0E8F2),
+                                    border: Border.all(
+                                      color: const Color(0xFF003D5B),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      '취소',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF003D5B),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 48,
+                              color: const Color(0xFF003D5B),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD0E8F2),
+                                    border: Border.all(
+                                      color: const Color(0xFF003D5B),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      '예매',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF003D5B),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-
-              // My Ticket Button
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Image.asset(
-                  'assets/figma_images/onboarding/ticket-bnt.png',
-                  fit: BoxFit.contain,
+            ]
+          : null,
+      body: Stack(
+        key: _stackKey,
+        children: [
+          Column(
+            children: [
+              // Route Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            color: const Color(0xFFD0E8F2),
+            child: Center(
+              child: Text(
+                '${widget.departureStation} → ${widget.arrivalStation}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF003D5B),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Date Selection Bar
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            color: const Color(0xFFE8E8E8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Previous Day Button
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFF003D5B), width: 2),
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                  ),
+                  child: const Text(
+                    '이전날',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF003D5B),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Current Date
+                Text(
+                  _getFormattedDate(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Next Day Button
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFF003D5B), width: 2),
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                  ),
+                  child: const Text(
+                    '다음날',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF003D5B),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Table Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            color: const Color(0xFFE0E0E0),
+            child: Row(
+              children: [
+                const Expanded(
+                  flex: 2,
+                  child: Text(
+                    '열차',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ),
+                const Expanded(
+                  flex: 2,
+                  child: Text(
+                    '출발',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ),
+                const Expanded(
+                  flex: 2,
+                  child: Text(
+                    '도착',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    key: _normalPriceHeaderKey,
+                    child: const Text(
+                      '일반실\n운임',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF666666),
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    key: _specialPriceHeaderKey,
+                    child: const Text(
+                      '특/우등\n운임+요금',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF666666),
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Train List
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (scrollNotification) {
+                  if (scrollNotification is ScrollUpdateNotification) {
+                    _onScroll();
+                  }
+                  return false;
+                },
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _buildTrainItem(
+                      0,
+                      'KTX-산천\n401',
+                      '11:18\n용산',
+                      '13:12\n광주송정',
+                      '30%할인',
+                      '32,800원',
+                      '운임30%',
+                      '51,500원',
+                      const Color(0xFFFF5722),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      1,
+                      'KTX-산천\n403',
+                      '11:45\n용산',
+                      '13:39\n광주송정',
+                      '25%할인',
+                      '35,100원',
+                      '운임25%',
+                      '53,800원',
+                      const Color(0xFFFF5722),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      2,
+                      'KTX\n405',
+                      '12:15\n용산',
+                      '14:21\n광주송정',
+                      '10%할인',
+                      '42,100원',
+                      '운임10%',
+                      '60,800원',
+                      const Color(0xFFFF5722),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      3,
+                      'KTX-산천\n9419',
+                      '13:30\n용산',
+                      '15:23\n광주송정',
+                      '46,800원',
+                      'Ⓜ5%적립',
+                      '65,500원',
+                      'Ⓜ5%적립',
+                      const Color(0xFFFF9800),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      4,
+                      'KTX\n421',
+                      '14:48\n용산',
+                      '16:46\n광주송정',
+                      '46,800원',
+                      'Ⓜ5%적립',
+                      '65,500원',
+                      'Ⓜ5%적립',
+                      const Color(0xFFFF9800),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      5,
+                      'KTX\n423',
+                      '15:33\n용산',
+                      '17:33\n광주송정',
+                      '46,800원',
+                      'Ⓜ5%적립',
+                      '65,500원',
+                      'Ⓜ5%적립',
+                      const Color(0xFFFF9800),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      6,
+                      'KTX-청룡\n425',
+                      '16:08\n용산',
+                      '17:44\n광주송정',
+                      '47,100원',
+                      'Ⓜ5%적립',
+                      '56,500원',
+                      'Ⓜ5%적립',
+                      const Color(0xFFFF9800),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      7,
+                      'KTX-산천\n427',
+                      '16:43\n용산',
+                      '18:43\n광주송정',
+                      '46,800원',
+                      'Ⓜ5%적립',
+                      '매진',
+                      '',
+                      const Color(0xFFFF9800),
+                      isSoldOut: true,
+                    ),
+                    const Divider(height: 1, color: Color(0xFFE0E0E0)),
+                    _buildTrainItem(
+                      8,
+                      'KTX\n481',
+                      '17:10\n용산',
+                      '20:08\n광주송정',
+                      '38,800원',
+                      'Ⓜ5%적립',
+                      '54,000원',
+                      'Ⓜ5%적립',
+                      const Color(0xFFFF9800),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+          // 그림자 오버레이
+          _buildShadowOverlay(),
+        ],
       ),
     );
   }
@@ -762,14 +738,13 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
               child: GestureDetector(
                 onTap: () => _onCorrectTap(trainIndex),
                 child: Container(
+                  key: _trainButtonKeys[trainIndex * 2],
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFF003D5B), width: 2),
                     borderRadius: BorderRadius.circular(8),
-                    color: isBlinking && _blinkAnimation != null
-                        ? Color(0xFFFF5959).withOpacity(_blinkAnimation!.value)
-                        : Colors.transparent,
+                    color: Colors.transparent,
                   ),
                   child: Column(
                     children: [
@@ -805,6 +780,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
               child: GestureDetector(
                 onTap: isSoldOut ? null : () => _onCorrectTap(trainIndex),
                 child: Container(
+                  key: _trainButtonKeys[trainIndex * 2 + 1],
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                   decoration: BoxDecoration(
@@ -813,9 +789,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(8),
-                    color: isBlinking && _blinkAnimation != null
-                        ? Color(0xFFFF5959).withOpacity(_blinkAnimation!.value)
-                        : Colors.transparent,
+                    color: Colors.transparent,
                   ),
                   child: Center(
                     child: isSoldOut
@@ -862,5 +836,49 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
         ),
       ),
     );
+  }
+}
+
+class MultiShadowOverlayPainter extends CustomPainter {
+  final List<Rect> highlightRects;
+  final double shadowOpacity;
+
+  MultiShadowOverlayPainter({
+    required this.highlightRects,
+    required this.shadowOpacity,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color(0xFFB3B3B3).withValues(alpha: shadowOpacity);
+
+    // 전체 화면 경로
+    final fullScreenPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // 모든 하이라이트 영역을 합친 경로
+    Path highlightPath = Path();
+    for (var rect in highlightRects) {
+      highlightPath.addRRect(RRect.fromRectAndRadius(
+        rect,
+        const Radius.circular(8),
+      ));
+    }
+
+    // 차집합으로 하이라이트 영역을 제외한 영역만 그리기
+    final shadowPath = Path.combine(
+      PathOperation.difference,
+      fullScreenPath,
+      highlightPath,
+    );
+
+    canvas.drawPath(shadowPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(MultiShadowOverlayPainter oldDelegate) {
+    return oldDelegate.highlightRects != highlightRects ||
+        oldDelegate.shadowOpacity != shadowOpacity;
   }
 }

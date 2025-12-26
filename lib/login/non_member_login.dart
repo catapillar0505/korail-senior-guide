@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'info_check_screen.dart';
+import '../components/custom_header.dart';
+import '../components/bottom_nav_bar.dart';
 
 class NonMemberLoginScreen extends StatefulWidget {
   const NonMemberLoginScreen({super.key});
@@ -43,7 +45,6 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
   int wrongTapCount = 0;
   bool isBlinking = false;
   AnimationController? _blinkController;
-  Animation<double>? _blinkAnimation;
 
   bool isDanbiSpeaking = false;
   String displayedText = '';
@@ -64,10 +65,6 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
       });
 
     _blinkController = controller;
-
-    _blinkAnimation = Tween<double>(begin: 0.2, end: 0.4).animate(
-      CurvedAnimation(parent: controller, curve: Curves.linear),
-    );
 
     // Add listeners to update button state
     _nameController.addListener(_onNameChanged);
@@ -338,13 +335,10 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
                   child: Column(
                     children: [
                       // Top Navigation Bar
-                      Container(
-                        margin: const EdgeInsets.only(top: 40),
-                        child: Image.asset(
-                          'assets/figma_images/reservation/login-top-navbar.png',
-                          width: double.infinity,
-                          fit: BoxFit.fitWidth,
-                        ),
+                      CustomHeader(
+                        title: '비회원',
+                        topMargin: 40,
+                        height: 80,
                       ),
 
                     // Form Container
@@ -547,77 +541,16 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
               left: 0,
               right: 0,
               bottom: 0,
-              child: Container(
-                height: bottomBarHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Home Button
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
-                      child: Image.asset(
-                        'assets/figma_images/onboarding/home-bnt.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-
-                    // Danbi Button
-                    GestureDetector(
-                      onTap: _onDanbiPressed,
-                      child: Container(
-                        width: 140,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF003D5B),
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        child: Center(
-                          child: isDanbiSpeaking
-                              ? SvgPicture.asset(
-                                  'assets/figma_images/onboarding/speak-icon.svg',
-                                  width: 36,
-                                  height: 36,
-                                )
-                              : const Text(
-                                  '단비',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-
-                    // My Ticket Button
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
-                      child: Image.asset(
-                        'assets/figma_images/onboarding/ticket-bnt.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                ),
+              child: BottomNavBar(
+                onDanbiPressed: _onDanbiPressed,
+                isDanbiSpeaking: isDanbiSpeaking,
+                danbiChild: isDanbiSpeaking
+                    ? SvgPicture.asset(
+                        'assets/figma_images/onboarding/speak-icon.svg',
+                        width: 36,
+                        height: 36,
+                      )
+                    : null,
               ),
             ),
           ],

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:korail_ai_agent/onboarding/last_screen.dart';
+import 'package:korail_ai_agent/onboarding/onboarding_gif_screen.dart';
+import 'package:korail_ai_agent/onboarding/onboarding_image_screen.dart';
+import 'package:korail_ai_agent/onboarding/start_screen_2.dart';
 import 'package:korail_ai_agent/reservation/reservation_screen.dart';
 import 'onboarding/start_screen.dart';
-import 'onboarding/guide_screen.dart';
-import 'onboarding/guide_screen_2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,9 +24,11 @@ class MyApp extends StatelessWidget {
       ),
       home: const StartScreen(),
       routes: {
-        '/guide': (context) => const GuideScreen(),
-        '/guide2': (context) => const GuideScreen2(),
         '/reservation': (context) => const ReservationScreen(),
+        '/start2': (context) => const StartScreen2(),
+        '/onboarding-image': (context) => const OnboardingImageScreen(),
+        '/gif': (context) => const OnboardingGifScreen(),
+        '/last': (context) => const LastScreen(),
       },
     );
   }

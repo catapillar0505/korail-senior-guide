@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-class StartScreen extends StatelessWidget {
-  const StartScreen({super.key});
+class StartScreen2 extends StatelessWidget {
+  const StartScreen2({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,20 +57,7 @@ class StartScreen extends StatelessWidget {
                   const SizedBox(height: 320),
 
                   const Text(
-                    '기차표 예매가 처음이신가요?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                      height: 1.5,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  const Text(
-                    '예매부터 결제까지\nAI단비가 안내해드릴게요!',
+                    'AI 단비는 온라인 예매가\n어려운 분들을 위해\n단계마다 설명과 도움을 드려요',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -87,7 +74,7 @@ class StartScreen extends StatelessWidget {
                     height: 66,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/start2');
+                        Navigator.pushNamed(context, '/onboarding-image');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF003D5B),

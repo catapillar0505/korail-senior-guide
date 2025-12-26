@@ -19,49 +19,35 @@ class _PlaceSelectionModalState extends State<PlaceSelectionModal> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  // Main stations displayed in '주요역' section
-  final List<List<String>> mainStationsList = [
-    ['서울', '용산'],
-    ['광명', '영등포'],
-    ['수원', '평택'],
-  ];
+  // Selectable stations only
+  final Set<String> selectableStations = {'용산', '광주', '광주송정'};
 
-  // Additional stations for search
-  final List<List<String>> additionalStations = [
-    ['광양', '광주'],
-    ['광주송정', '광천'],
-    ['서광주', ''],
-  ];
+  // Station categories
+  final Map<String, List<String>> stationCategories = {
+    '주요역': ['서울', '용산', '광명', '영등포', '수원', '평택', '천안아산', '오송'],
+    'ㄱ': ['가남', '가평', '각계', '감곡장호원', '강릉', '강진', '계룡', '고래불', '공주', '광명', '광양', '광주', '광주송정', '광천', '구례구', '구미', '김제', '김천'],
+    'ㄴ': ['나전', '나주', '남성현', '남원', '남창', '남춘천', '논산', '능주'],
+    'ㄷ': ['다시', '단양', '대곡', '대구', '대야', '대전', '대천', '덕소', '도계', '도고온천'],
+  };
 
-  List<List<String>> get mainStations {
-    // Always display the same main stations regardless of departure/arrival
-    return mainStationsList;
-  }
-
-  List<List<String>> get filteredStations {
+  Map<String, List<String>> get displayedStations {
     if (_searchQuery.isEmpty) {
-      return mainStations;
+      return stationCategories;
     }
 
-    // Combine all stations for search
-    List<String> allStations = [
-      ...mainStationsList.expand((row) => row),
-      ...additionalStations.expand((row) => row),
-    ].where((s) => s.isNotEmpty).toList();
+    // Search across all categories
+    Map<String, List<String>> result = {};
 
-    List<String> filtered = allStations.where((station) {
-      return HangulUtils.matchesSearch(station, _searchQuery);
-    }).toList();
+    stationCategories.forEach((category, stations) {
+      List<String> filtered = stations.where((station) {
+        return HangulUtils.matchesSearch(station, _searchQuery);
+      }).toList();
 
-    // Convert back to 2D array
-    List<List<String>> result = [];
-    for (int i = 0; i < filtered.length; i += 2) {
-      if (i + 1 < filtered.length) {
-        result.add([filtered[i], filtered[i + 1]]);
-      } else {
-        result.add([filtered[i], '']);
+      if (filtered.isNotEmpty) {
+        result[category] = filtered;
       }
-    }
+    });
+
     return result;
   }
 
@@ -139,7 +125,7 @@ class _PlaceSelectionModalState extends State<PlaceSelectionModal> {
 
           const SizedBox(height: 24),
 
-          // Main stations section
+          // Stations section by category
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -147,35 +133,31 @@ class _PlaceSelectionModalState extends State<PlaceSelectionModal> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '주요역',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0288D1),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                    ...displayedStations.entries.map((entry) {
+                      String category = entry.key;
+                      List<String> stations = entry.value;
 
-                    // Station grid
-                    ...filteredStations.map((row) => Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStationButton(row[0]),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Category title
+                          Text(
+                            category,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0288D1),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: row[1].isEmpty
-                                  ? const SizedBox()
-                                  : _buildStationButton(row[1]),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    )),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Station grid (2 columns)
+                          ..._buildStationGrid(stations),
+
+                          const SizedBox(height: 24),
+                        ],
+                      );
+                    }).toList(),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -187,11 +169,42 @@ class _PlaceSelectionModalState extends State<PlaceSelectionModal> {
     );
   }
 
+  List<Widget> _buildStationGrid(List<String> stations) {
+    List<Widget> rows = [];
+    for (int i = 0; i < stations.length; i += 2) {
+      rows.add(
+        Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStationButton(stations[i]),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: i + 1 < stations.length
+                      ? _buildStationButton(stations[i + 1])
+                      : const SizedBox(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      );
+    }
+    return rows;
+  }
+
   Widget _buildStationButton(String stationName) {
+    final bool isSelectable = selectableStations.contains(stationName);
+
     return InkWell(
-      onTap: () {
-        Navigator.pop(context, stationName);
-      },
+      onTap: isSelectable
+          ? () {
+              Navigator.pop(context, stationName);
+            }
+          : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(

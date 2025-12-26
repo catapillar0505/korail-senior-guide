@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'payment_screen_final.dart';
+import '../components/bottom_nav_bar.dart';
 
 class PaymentScreen8 extends StatefulWidget {
   final String cardNumber;
@@ -455,62 +456,11 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
           ),
 
           // Bottom Navigation Bar - 하단 고정
-          Positioned(
+          const Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
-              height: bottomBarHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    child: Image.asset(
-                      'assets/figma_images/onboarding/home-bnt.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  Container(
-                    width: 140,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF003D5B),
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '단비',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 80,
-                    height: 80,
-                    child: Image.asset(
-                      'assets/figma_images/onboarding/ticket-bnt.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: BottomNavBar(),
           ),
 
           // Status bar overlay
