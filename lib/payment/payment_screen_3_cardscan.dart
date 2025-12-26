@@ -103,7 +103,7 @@ class PaymentScreen3CardScan extends StatelessWidget {
                               foregroundColor: Colors.white, // 글자색
                               padding: const EdgeInsets.symmetric(horizontal: 150.0, vertical: 15.0),
                               textStyle: const TextStyle(
-                                fontSize: 24,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w600,
                               ),
                               shape: const RoundedRectangleBorder(

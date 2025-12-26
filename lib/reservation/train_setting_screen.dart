@@ -676,11 +676,16 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
     Color discountColor, {
     bool isSoldOut = false,
   }) {
+    final bool isSelected = selectedTrainIndex == trainIndex;
+
     return GestureDetector(
       onTap: _onWrongTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
+        ),
         child: Row(
           children: [
             // Train Name

@@ -35,15 +35,20 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
             child: Stack(
               children: [
                 // Main Content
-                SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 140), // 아니오/네 버튼(70) + BottomNavBar(70)
-                  child: Container(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 140, // 아니오/네 버튼(70) + BottomNavBar(70)
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Container(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                           // Title
                           const Text(
                             '이용안내',
@@ -66,7 +71,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                           const Text(
                             '이름, 전화번호는 승차권 반환, 확인을\n위한 필수정보입니다.',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black,
                               height: 1.6,
@@ -78,7 +83,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                           Text(
                             '이름 : ${widget.name}',
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black,
                               height: 1.8,
@@ -88,13 +93,13 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                           Text(
                             '전화번호 : ${widget.phone}',
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black,
                               height: 1.8,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
 
                           // Notice Text
                           const Text(
@@ -105,7 +110,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                               height: 1.6,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 10),
 
                           // Collection Info
                           const Text(
@@ -127,7 +132,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                               height: 1.8,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
 
                           // Consent Question
                           const Text(
@@ -183,6 +188,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                       ),
                     ),
                   ),
+                ),
                 ),
 
                 // "아니오"/"네" Buttons (Fixed at bottom, above BottomNavBar)

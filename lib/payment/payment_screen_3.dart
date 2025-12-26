@@ -282,7 +282,7 @@ class _PaymentScreen3State extends State<PaymentScreen3> with SingleTickerProvid
     final isKeyboardVisible = keyboardHeight > 0;
     final bottomBarHeight = 70.0;
     final buttonAreaHeight = 80.0; // 버튼 영역 높이 (56 + 패딩)
-    final guideZoneHeight = 200.0;
+    final guideZoneHeight = 140.0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,

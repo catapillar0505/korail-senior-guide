@@ -52,7 +52,7 @@ class _ReservationScreenState extends State<ReservationScreen> with SingleTicker
     displayedText = guideTexts[0];
     selectedDate = DateTime.now();
 
-    // 그림자 애니메이션 설정 (1.3초 동안만 실행)
+    // 그림자 애니메이션 설정
     _shadowController = AnimationController(
       duration: const Duration(milliseconds: 650), // 0.65초 fade in
       reverseDuration: const Duration(milliseconds: 650), // 0.65초 fade out
@@ -554,6 +554,7 @@ class _ReservationScreenState extends State<ReservationScreen> with SingleTicker
                           ),
                           const SizedBox(width: 12),
                           Expanded(
+                            key: _trainSearchKey,
                             child: GestureDetector(
                               onTap: () {
                                 // 현재 그림자 fade out
@@ -572,7 +573,6 @@ class _ReservationScreenState extends State<ReservationScreen> with SingleTicker
                                 );
                               },
                               child: Container(
-                                key: _trainSearchKey,
                                 height: 56,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFB0D4E3),

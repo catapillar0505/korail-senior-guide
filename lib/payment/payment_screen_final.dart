@@ -30,11 +30,19 @@ class _PaymentScreenFinalState extends State<PaymentScreenFinal> {
       headerBackgroundColor: const Color(0xFF003D5B),
       body: GestureDetector(
         onTap: _hideGuideZone,
-        child: SingleChildScrollView(
-          child: Image.asset(
-            'assets/figma_images/commoncard/final.png',
-            fit: BoxFit.fitWidth,
-            width: double.infinity,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (scrollNotification is ScrollUpdateNotification) {
+              _hideGuideZone();
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            child: Image.asset(
+              'assets/figma_images/commoncard/final.png',
+              fit: BoxFit.fitWidth,
+              width: double.infinity,
+            ),
           ),
         ),
       ),
