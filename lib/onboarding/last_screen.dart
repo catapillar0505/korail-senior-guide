@@ -59,7 +59,8 @@ class LastScreen extends StatelessWidget {
 
                   // Main text
                   const Text(
-                  '그럼 이제 저와 함께\n예매해볼까요?',
+                    '그럼 이제 저와 함께\n예매해볼까요?',
+                    textAlign: TextAlign.center,  // 👈 중앙 정렬 추가
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,

@@ -39,15 +39,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     // 화면 진입 시 자동으로 스크롤을 끝까지 내림
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    // 이미지 로드를 위해 여러 번 재시도
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (_scrollController.hasClients && mounted) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (_scrollController.hasClients && mounted) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 

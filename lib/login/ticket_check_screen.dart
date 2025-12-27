@@ -202,19 +202,22 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
                   ),
                 ),
 
-                  const SizedBox(height: 250), // Space for fixed bottom elements
+                  const SizedBox(height: 280), // Space for AiGuideZone + Payment + NavBar
                 ],
               ),
             ),
 
             // AI Guide Zone
-            AiGuideZone(
-              guideText: '예약 정보가 맞으면\n결제하기를 눌러주세요',
-              height: 130,
-              fontSize: 22,
-              showGradient: true,
-              showBorder: false,
-              showRoundedCorners: false,
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 142, // Payment button (72) + BottomNavBar (70)
+              child: AiGuideZone(
+                guideText: '예약 정보가 맞으면\n결제하기를 눌러주세요',
+                height: 130,
+                fontSize: 20,
+                wrapWithPositioned: false,
+              ),
             ),
 
             // Payment Button (Fixed at bottom)
@@ -225,8 +228,6 @@ class _TicketCheckScreenState extends State<TicketCheckScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 130), // Space for guide zone
-
                   // Payment Button
                   Container(
                     color: Colors.white,

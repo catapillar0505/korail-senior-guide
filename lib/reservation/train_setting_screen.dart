@@ -26,6 +26,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
   int wrongTapCount = 0;
   bool showReservationModal = false;
   int selectedTrainIndex = -1;
+  String selectedSeatType = ''; // 'normal' or 'special'
   AnimationController? _shadowController;
   Animation<double>? _shadowAnimation;
 
@@ -106,7 +107,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
     }
   }
 
-  void _onCorrectTap(int trainIndex) {
+  void _onCorrectTap(int trainIndex, String seatType) {
     // 그림자 애니메이션 fade out
     _hideShadowAnimation();
 
@@ -115,12 +116,15 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
       showReservationModal = true;
       showGuideZone = false;
       selectedTrainIndex = trainIndex;
+      selectedSeatType = seatType;
     });
   }
 
   void _onModalCancel() {
     setState(() {
       showReservationModal = false;
+      selectedTrainIndex = -1;
+      selectedSeatType = '';
     });
   }
 
@@ -732,14 +736,16 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
             Expanded(
               flex: 3,
               child: GestureDetector(
-                onTap: () => _onCorrectTap(trainIndex),
+                onTap: () => _onCorrectTap(trainIndex, 'normal'),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFF003D5B), width: 2),
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.transparent,
+                    color: isSelected && selectedSeatType == 'normal'
+                        ? const Color(0xFFB3D9F2)
+                        : Colors.transparent,
                   ),
                   child: Column(
                     children: [
@@ -773,7 +779,7 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
             Expanded(
               flex: 3,
               child: GestureDetector(
-                onTap: isSoldOut ? null : () => _onCorrectTap(trainIndex),
+                onTap: isSoldOut ? null : () => _onCorrectTap(trainIndex, 'special'),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
@@ -783,7 +789,9 @@ class _TrainSettingScreenState extends State<TrainSettingScreen> with SingleTick
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.transparent,
+                    color: isSelected && selectedSeatType == 'special'
+                        ? const Color(0xFFB3D9F2)
+                        : Colors.transparent,
                   ),
                   child: Center(
                     child: isSoldOut

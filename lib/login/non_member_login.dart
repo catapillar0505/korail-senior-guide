@@ -26,7 +26,7 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
 
   final List<String> textGuides = [
     '이후에 티켓 확인을 위한\n1회용 정보를 입력해주세요',
-    '"비밀번호는 무슨 비밀번호야?"',
+    '"비밀번호에 뭘 써야해?"',
     '1회용 비밀번호를 만드는 거예요!\n비밀번호를 입력 후 정확히 썼는지\n확인을 위해 한번더 입력해주세요',
     '비밀번호 5자리를 입력해주세요~',
     '이런🥲 비밀번호가 일치하지 않아요!',
@@ -316,7 +316,8 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final isKeyboardVisible = keyboardHeight > 0;
-    final bottomBarHeight = 70.0;
+    final systemBarHeight = MediaQuery.of(context).padding.bottom;
+    final bottomBarHeight = 70.0 + systemBarHeight;
     final confirmButtonHeight = 80.0;
     final guideZoneHeight = 140.0;
 
@@ -524,9 +525,6 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: SizedBox.shrink(),
       ),
     );
   }

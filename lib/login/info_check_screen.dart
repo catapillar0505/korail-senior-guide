@@ -195,7 +195,7 @@ class _InfoCheckScreenState extends State<InfoCheckScreen> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 70, // BottomNavBar 높이
+                  bottom: 120, // BottomNavBar 높이 + 시스템바 높이
                   child: Container(
                     height: 70,
                     decoration: const BoxDecoration(

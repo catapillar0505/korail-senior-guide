@@ -382,7 +382,7 @@ class _PaymentScreen8State extends State<PaymentScreen8> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: bottomBarHeight,
+            bottom: bottomBarHeight+50,
             child: Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
