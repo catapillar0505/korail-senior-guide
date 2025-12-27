@@ -27,7 +27,7 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
   final List<String> textGuides = [
     '이후에 티켓 확인을 위한\n1회용 정보를 입력해주세요',
     '"비밀번호에 뭘 써야해?"',
-    '1회용 비밀번호를 만드는 거예요!\n비밀번호를 입력 후 정확히 썼는지\n확인을 위해 한번더 입력해주세요',
+    '나중에 승차권을 확인할 때 쓸\n 비밀번호를 만드는 거예요',
     '비밀번호 5자리를 입력해주세요~',
     '이런🥲 비밀번호가 일치하지 않아요!',
     '정보가 다 잘 입력됐네요!\n이제 확인 버튼을 눌러주세요!',
@@ -445,34 +445,36 @@ class _NonMemberLoginScreenState extends State<NonMemberLoginScreen> with Single
               ),
 
             // Guide Zone - 키보드가 열리면 키보드 위, 닫히면 하단바 위에 위치
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: isKeyboardVisible
-                  ? keyboardHeight
-                  : bottomBarHeight + confirmButtonHeight,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: guideZoneHeight,
-                child: AiGuideZone(
-                  guideText: displayedText,
+            // isDanbiSpeaking이 true이고 타이핑 중이 아닐 때만 숨김 (5초 대기 시간)
+            if (!isDanbiSpeaking || isTyping)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: isKeyboardVisible
+                    ? keyboardHeight
+                    : bottomBarHeight + confirmButtonHeight,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   height: guideZoneHeight,
-                  backgroundColor: isDanbiSpeaking ? Colors.transparent : Colors.white,
-                  textColor: isDanbiSpeaking ? Colors.white : Colors.black,
-                  showGradient: isDanbiSpeaking,
-                  showBorder: true,
-                  showRoundedCorners: true,
-                  wrapWithPositioned: false,
-                  boxShadow: isDanbiSpeaking
-                      ? BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        )
-                      : null,
+                  child: AiGuideZone(
+                    guideText: displayedText,
+                    height: guideZoneHeight,
+                    backgroundColor: isDanbiSpeaking ? Colors.transparent : Colors.white,
+                    textColor: isDanbiSpeaking ? Colors.white : Colors.black,
+                    showGradient: isDanbiSpeaking,
+                    showBorder: !(isDanbiSpeaking && isTyping),
+                    showRoundedCorners: !(isDanbiSpeaking && isTyping),
+                    wrapWithPositioned: false,
+                    boxShadow: isDanbiSpeaking
+                        ? BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          )
+                        : null,
+                  ),
                 ),
               ),
-            ),
 
             // Confirm Button - 하단바 바로 위에 고정 (공백 없음)
             Positioned(
